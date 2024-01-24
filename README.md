@@ -15,3 +15,6 @@ Update Item: Modify an existing item by its ID.
 Delete Item: Remove an item from the system.
 
 Feel free to implement it as you see fit, but simplicity and readability will be highly valued.
+
+## Kick Off
+[Kick-Off](https://github.com/DhirenB94/nfon-crud/issues/1) with a task breakdown can be found here
