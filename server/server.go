@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 	models "nfon-crud"
+	"strconv"
 
 	"github.com/bmizerany/pat"
 )
@@ -66,7 +67,21 @@ func (s *Server) createItemHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) individualItemHandler(w http.ResponseWriter, r *http.Request) {
-
+	switch r.Method {
+	case http.MethodGet:
+		idString := r.URL.Query().Get(":id")
+		id, err := strconv.Atoi(idString)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+		item, err := s.Store.GetItemByID(id)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusNotFound)
+			return
+		}
+		json.NewEncoder(w).Encode(item)
+	}
 }
 
 func (s *Server) showAllItemsHandler(w http.ResponseWriter, r *http.Request) {

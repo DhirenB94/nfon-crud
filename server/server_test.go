@@ -1,6 +1,8 @@
 package srv_test
 
 import (
+	"encoding/json"
+	"errors"
 	"net/http"
 	"net/http/httptest"
 	models "nfon-crud"
@@ -22,7 +24,12 @@ func (m *mockItemStore) CreateItem(name string) {
 	)
 }
 func (m *mockItemStore) GetItemByID(id int) (*models.Item, error) {
-	return nil, nil
+	for _, item := range m.items {
+		if id == item.ID {
+			return &item, nil
+		}
+	}
+	return nil, errors.New("item not found")
 }
 func (m *mockItemStore) UpdateItemByID(id int, name string) error {
 	return nil
@@ -68,4 +75,35 @@ func TestCreateItem(t *testing.T) {
 		assert.Equal(t, expectedOutput, mockStore.items[1])
 		assert.Len(t, mockStore.items, 2)
 	})
+}
+
+func TestGetItemByID(t *testing.T) {
+	t.Run("get item by valid id", func(t *testing.T) {
+		mockItems := []models.Item{
+			{ID: 1, Name: "fridge"},
+			{ID: 2, Name: "freezer"},
+		}
+		itemStore := &mockItemStore{
+			items: mockItems,
+		}
+		server := srv.NewServer(itemStore)
+
+		req, _ := http.NewRequest(http.MethodGet, "/item/2", nil)
+		res := httptest.NewRecorder()
+		server.Router.ServeHTTP(res, req)
+
+		var item models.Item
+		err := json.NewDecoder(res.Body).Decode(&item)
+		if err != nil {
+			t.Fatalf("Unable to parse response from server %q into slice of items, '%v'", res.Body, err)
+		}
+
+		expectedItem := models.Item{
+			ID:   2,
+			Name: "freezer",
+		}
+		assert.Equal(t, http.StatusOK, res.Code)
+		assert.Equal(t, expectedItem, item)
+	})
+
 }
