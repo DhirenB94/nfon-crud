@@ -8,7 +8,7 @@ import (
 
 func main() {
 	server := srv.NewServer(nil)
-	err := http.ListenAndServe(":3333", server)
+	err := http.ListenAndServe(":3333", server.Router)
 	if err != nil {
 		log.Fatal(err)
 	}

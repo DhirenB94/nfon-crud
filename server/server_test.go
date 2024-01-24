@@ -17,7 +17,7 @@ func TestServer(t *testing.T) {
 
 	mockStore := &mockItemStore{}
 	server := srv.NewServer(mockStore)
-	server.ServeHTTP(res, req)
+	server.Router.ServeHTTP(res, req)
 
 	assert.Equal(t, http.StatusOK, res.Code)
 	assert.Equal(t, "healthy", res.Body.String())
