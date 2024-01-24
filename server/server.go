@@ -2,10 +2,16 @@ package srv
 
 import "net/http"
 
-type Server struct{}
+type ItemStore interface{}
 
-func NewServer() *Server {
-	return &Server{}
+type Server struct {
+	store ItemStore
+}
+
+func NewServer(store ItemStore) *Server {
+	return &Server{
+		store: store,
+	}
 }
 
 func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {

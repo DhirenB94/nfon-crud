@@ -9,11 +9,14 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+type mockItemStore struct{}
+
 func TestServer(t *testing.T) {
 	req, _ := http.NewRequest(http.MethodGet, "/", nil)
 	res := httptest.NewRecorder()
 
-	server := srv.NewServer()
+	mockStore := &mockItemStore{}
+	server := srv.NewServer(mockStore)
 	server.ServeHTTP(res, req)
 
 	assert.Equal(t, http.StatusOK, res.Code)
