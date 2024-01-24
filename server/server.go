@@ -2,11 +2,18 @@ package srv
 
 import (
 	"net/http"
+	models "nfon-crud"
 
 	"github.com/bmizerany/pat"
 )
 
-type ItemStore interface{}
+type ItemStore interface{
+	CreateItem(name string)
+	GetItemByID(id int) (*models.Item, error)
+	UpdateItemByID(id int, name string) error
+	DeleteItem(id int) error
+	GetAllItems() []models.Item
+}
 
 type Server struct {
 	Store  ItemStore
