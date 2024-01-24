@@ -105,5 +105,29 @@ func TestGetItemByID(t *testing.T) {
 		assert.Equal(t, http.StatusOK, res.Code)
 		assert.Equal(t, expectedItem, item)
 	})
+	t.Run("return 400 on invalid id format", func(t *testing.T) {
+		itemStore := &mockItemStore{}
+		server := srv.NewServer(itemStore)
 
+		req, _ := http.NewRequest(http.MethodGet, "/item/abc", nil)
+		res := httptest.NewRecorder()
+		server.Router.ServeHTTP(res, req)
+
+		assert.Equal(t, http.StatusBadRequest, res.Code)
+	})
+	t.Run("return a 404 if item does not exist in the store", func(t *testing.T) {
+		mockItems := []models.Item{
+			{ID: 1, Name: "chair"},
+		}
+		itemStore := &mockItemStore{
+			items: mockItems,
+		}
+		server := srv.NewServer(itemStore)
+
+		req, _ := http.NewRequest(http.MethodGet, "/item/2", nil)
+		res := httptest.NewRecorder()
+		server.Router.ServeHTTP(res, req)
+
+		assert.Equal(t, http.StatusNotFound, res.Code)
+	})
 }
