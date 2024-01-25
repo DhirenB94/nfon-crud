@@ -2,11 +2,11 @@ package srv_test
 
 import (
 	"encoding/json"
-	"errors"
 	"net/http"
 	"net/http/httptest"
 	models "nfon-crud/models"
 	srv "nfon-crud/server"
+	"nfon-crud/utils"
 	"strings"
 	"testing"
 
@@ -30,7 +30,7 @@ func (m *mockItemStore) GetItemByID(id int) (*models.Item, error) {
 			return &item, nil
 		}
 	}
-	return nil, errors.New("item not found")
+	return nil, utils.ErrNoItemByID
 }
 
 func (m *mockItemStore) UpdateItemByID(id int, name string) error {
@@ -40,7 +40,7 @@ func (m *mockItemStore) UpdateItemByID(id int, name string) error {
 			return nil
 		}
 	}
-	return errors.New("item not found")
+	return utils.ErrNoItemByID
 }
 
 func (m *mockItemStore) DeleteItem(id int) error {
@@ -50,7 +50,7 @@ func (m *mockItemStore) DeleteItem(id int) error {
 			return nil
 		}
 	}
-	return errors.New("item not found")
+	return utils.ErrNoItemByID
 }
 
 func (m *mockItemStore) GetAllItems(name string) (*[]models.Item, error) {
@@ -65,7 +65,7 @@ func (m *mockItemStore) GetAllItems(name string) (*[]models.Item, error) {
 		}
 	}
 	if len(items) == 0 {
-		return nil, errors.New("no items found")
+		return nil, utils.ErrNoItemByName
 	}
 	return &items, nil
 }

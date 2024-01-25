@@ -1,8 +1,8 @@
 package inMemDB
 
 import (
-	"errors"
 	"nfon-crud/models"
+	"nfon-crud/utils"
 )
 
 type InMemDB struct {
@@ -29,7 +29,7 @@ func (i *InMemDB) GetItemByID(id int) (*models.Item, error) {
 			return &item, nil
 		}
 	}
-	return nil, errors.New("item not found")
+	return nil, utils.ErrNoItemByID
 }
 
 func (i *InMemDB) UpdateItemByID(id int, name string) error {
@@ -40,7 +40,7 @@ func (i *InMemDB) UpdateItemByID(id int, name string) error {
 			return nil
 		}
 	}
-	return errors.New("item not found")
+	return utils.ErrNoItemByID
 }
 
 func (i *InMemDB) DeleteItem(id int) error {
@@ -50,7 +50,7 @@ func (i *InMemDB) DeleteItem(id int) error {
 			return nil
 		}
 	}
-	return errors.New("item not found")
+	return utils.ErrNoItemByID
 }
 
 func (i *InMemDB) GetAllItems(name string) (*[]models.Item, error) {
@@ -68,7 +68,7 @@ func (i *InMemDB) GetAllItems(name string) (*[]models.Item, error) {
 		}
 	}
 	if len(items) == 0 {
-		return nil, errors.New("no items found")
+		return nil, utils.ErrNoItemByName
 	}
 	return &items, nil
 }

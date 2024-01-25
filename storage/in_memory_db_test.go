@@ -3,6 +3,7 @@ package inMemDB_test
 import (
 	"nfon-crud/models"
 	inMemDB "nfon-crud/storage"
+	"nfon-crud/utils"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -40,8 +41,7 @@ func TestGetItemByID(t *testing.T) {
 
 		item, err := inMemDb.GetItemByID(4)
 		assert.Nil(t, item)
-		assert.Error(t, err)
-		assert.ErrorContains(t, err, "item not found")
+		assert.ErrorIs(t, err, utils.ErrNoItemByID)
 	})
 }
 
@@ -71,8 +71,7 @@ func TestUpdateItemById(t *testing.T) {
 		inMemDb.CreateItem("freezer")
 
 		err := inMemDb.UpdateItemByID(4, "chair")
-		assert.Error(t, err)
-		assert.ErrorContains(t, err, "item not found")
+		assert.ErrorIs(t, err, utils.ErrNoItemByID)
 	})
 }
 
@@ -88,8 +87,7 @@ func TestDeleteItem(t *testing.T) {
 
 		item, err := inMemDb.GetItemByID(2)
 		assert.Nil(t, item)
-		assert.Error(t, err)
-		assert.ErrorContains(t, err, "item not found")
+		assert.ErrorIs(t, err, utils.ErrNoItemByID)
 	})
 	t.Run("return error when trying to delete an id that is not in the store", func(t *testing.T) {
 		inMemDb := inMemDB.NewInMemDB()
@@ -98,8 +96,7 @@ func TestDeleteItem(t *testing.T) {
 		inMemDb.CreateItem("freezer")
 
 		err := inMemDb.DeleteItem(4)
-		assert.Error(t, err)
-		assert.ErrorContains(t, err, "item not found")
+		assert.ErrorIs(t, err, utils.ErrNoItemByID)
 	})
 }
 
@@ -117,7 +114,6 @@ func TestGetAllItems(t *testing.T) {
 		items, err := inMemDb.GetAllItems("")
 		assert.NoError(t, err)
 		assert.Equal(t, expectedItems, items)
-
 	})
 	t.Run("return empty array if no items stored", func(t *testing.T) {
 		inMemDb := inMemDB.NewInMemDB()
@@ -145,8 +141,7 @@ func TestGetAllItems(t *testing.T) {
 		inMemDb := inMemDB.NewInMemDB()
 
 		items, err := inMemDb.GetAllItems("fridge")
-		assert.Error(t, err)
-		assert.ErrorContains(t, err, "no items found")
 		assert.Nil(t, items)
+		assert.ErrorIs(t, err, utils.ErrNoItemByName)
 	})
 }
