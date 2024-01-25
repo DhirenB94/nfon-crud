@@ -54,5 +54,11 @@ func (i *InMemDB) DeleteItem(id int) error {
 }
 
 func (i *InMemDB) GetAllItems(name string) (*[]models.Item, error) {
-	return nil, nil
+	var items []models.Item
+	if name == "" {
+		for _, item := range i.ItemStore {
+			items = append(items, item)
+		}
+	}
+	return &items, nil
 }

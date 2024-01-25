@@ -102,3 +102,29 @@ func TestDeleteItem(t *testing.T) {
 		assert.ErrorContains(t, err, "item not found")
 	})
 }
+
+func TestGetAllItems(t *testing.T) {
+	t.Run("return all items if there are stored items", func(t *testing.T) {
+		inMemDb := inMemDB.NewInMemDB()
+
+		inMemDb.CreateItem("fridge")
+		inMemDb.CreateItem("freezer")
+
+		expectedItems := &[]models.Item{
+			{ID: 1, Name: "fridge"},
+			{ID: 2, Name: "freezer"},
+		}
+		items, err := inMemDb.GetAllItems("")
+		assert.NoError(t, err)
+		assert.Equal(t, expectedItems, items)
+
+	})
+	t.Run("return empty array if no items stored", func(t *testing.T) {
+		inMemDb := inMemDB.NewInMemDB()
+
+		items, err := inMemDb.GetAllItems("")
+		assert.NoError(t, err)
+		assert.Empty(t, items)
+	})
+
+}
