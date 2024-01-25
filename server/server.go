@@ -98,8 +98,15 @@ func (s *Server) individualItemHandler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		w.Write([]byte("item updated"))
-	}
 
+	case http.MethodDelete:
+		err = s.Store.DeleteItem(id)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusNotFound)
+			return
+		}
+		w.Write([]byte("item deleted"))
+	}
 }
 
 func (s *Server) showAllItemsHandler(w http.ResponseWriter, r *http.Request) {

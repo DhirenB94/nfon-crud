@@ -44,7 +44,13 @@ func (m *mockItemStore) UpdateItemByID(id int, name string) error {
 }
 
 func (m *mockItemStore) DeleteItem(id int) error {
-	return nil
+	for index, item := range m.items {
+		if id == item.ID {
+			m.items[index] = models.Item{}
+			return nil
+		}
+	}
+	return errors.New("item not found")
 }
 
 func (m *mockItemStore) GetAllItems() []models.Item {
@@ -181,6 +187,45 @@ func TestUpdate(t *testing.T) {
 		server := srv.NewServer(mockStore)
 
 		req, _ := http.NewRequest(http.MethodPatch, "/item/3", requestBody)
+		res := httptest.NewRecorder()
+		server.Router.ServeHTTP(res, req)
+
+		assert.Equal(t, http.StatusNotFound, res.Code)
+	})
+}
+
+func TestDelete(t *testing.T) {
+	t.Run("delete item with valid id", func(t *testing.T) {
+		items := []models.Item{
+			{ID: 5, Name: "fridge"},
+			{ID: 7, Name: "freezer"},
+			{ID: 10, Name: "mini fridge"},
+		}
+		mockStore := &mockItemStore{
+			items: items,
+		}
+		server := srv.NewServer(mockStore)
+
+		req, _ := http.NewRequest(http.MethodDelete, "/item/5", nil)
+		res := httptest.NewRecorder()
+		server.Router.ServeHTTP(res, req)
+
+		assert.Equal(t, http.StatusOK, res.Code)
+		assert.Equal(t, "item deleted", res.Body.String())
+
+		assert.Equal(t, models.Item{}, mockStore.items[0])
+
+	})
+	t.Run("return 404 if item does not exist in the store", func(t *testing.T) {
+		mockItems := []models.Item{
+			{ID: 1, Name: "fridge"},
+		}
+		mockStore := &mockItemStore{
+			items: mockItems,
+		}
+		server := srv.NewServer(mockStore)
+
+		req, _ := http.NewRequest(http.MethodDelete, "/item/2", nil)
 		res := httptest.NewRecorder()
 		server.Router.ServeHTTP(res, req)
 
