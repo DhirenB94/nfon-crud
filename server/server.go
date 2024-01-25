@@ -2,9 +2,8 @@ package srv
 
 import (
 	"encoding/json"
-	"fmt"
 	"net/http"
-	models "nfon-crud"
+	models "nfon-crud/models"
 	"strconv"
 
 	"github.com/bmizerany/pat"
@@ -59,7 +58,6 @@ func (s *Server) createItemHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	err := json.NewDecoder(r.Body).Decode(&newItemName)
 	if err != nil {
-		fmt.Println("here")
 		w.WriteHeader(http.StatusBadRequest)
 		http.Error(w, "invalid request body", http.StatusBadRequest)
 		return

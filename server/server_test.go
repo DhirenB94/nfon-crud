@@ -5,7 +5,7 @@ import (
 	"errors"
 	"net/http"
 	"net/http/httptest"
-	models "nfon-crud"
+	models "nfon-crud/models"
 	srv "nfon-crud/server"
 	"strings"
 	"testing"
