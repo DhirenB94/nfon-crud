@@ -10,12 +10,14 @@ import (
 	"github.com/bmizerany/pat"
 )
 
+const JsonContentType = "application/json"
+
 type ItemStore interface {
 	CreateItem(name string)
 	GetItemByID(id int) (*models.Item, error)
 	UpdateItemByID(id int, name string) error
 	DeleteItem(id int) error
-	GetAllItems() []models.Item
+	GetAllItems(name string) (*[]models.Item, error)
 }
 
 type Server struct {
@@ -110,5 +112,11 @@ func (s *Server) individualItemHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) showAllItemsHandler(w http.ResponseWriter, r *http.Request) {
-
+	items, _ := s.Store.GetAllItems("")
+	if len(*items) == 0 {
+		w.Write([]byte("no items to display yet"))
+		return
+	}
+	w.Header().Set("content-type", JsonContentType)
+	json.NewEncoder(w).Encode(items)
 }

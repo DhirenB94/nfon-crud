@@ -53,8 +53,8 @@ func (m *mockItemStore) DeleteItem(id int) error {
 	return errors.New("item not found")
 }
 
-func (m *mockItemStore) GetAllItems() []models.Item {
-	return nil
+func (m *mockItemStore) GetAllItems(name string) (*[]models.Item, error) {
+	return &m.items, nil
 }
 
 func TestServer(t *testing.T) {
@@ -230,5 +230,55 @@ func TestDelete(t *testing.T) {
 		server.Router.ServeHTTP(res, req)
 
 		assert.Equal(t, http.StatusNotFound, res.Code)
+	})
+}
+
+func TestGetAllItems(t *testing.T) {
+	t.Run("when no name is provided in the query", func(t *testing.T) {
+		t.Run("returns all items as JSON", func(t *testing.T) {
+			allItems := []models.Item{
+				{ID: 5, Name: "fridge"},
+				{ID: 7, Name: "freezer"},
+			}
+			mockStore := &mockItemStore{
+				items: allItems,
+			}
+			server := srv.NewServer(mockStore)
+
+			req, _ := http.NewRequest(http.MethodGet, "/items", nil)
+			res := httptest.NewRecorder()
+			server.Router.ServeHTTP(res, req)
+
+			var items []models.Item
+			err := json.NewDecoder(res.Body).Decode(&items)
+			if err != nil {
+				t.Fatalf("Unable to parse response from server %q into slice of items, '%v'", res.Body, err)
+			}
+
+			assert.Equal(t, http.StatusOK, res.Code)
+			assert.Equal(t, allItems, items)
+			assert.Equal(t, srv.JsonContentType, res.Header().Get("content-type"))
+		})
+		t.Run("returns message to the user if no items are in the store yet", func(t *testing.T) {
+			req, _ := http.NewRequest(http.MethodGet, "/items", nil)
+			res := httptest.NewRecorder()
+
+			itemStore := &mockItemStore{}
+			server := srv.NewServer(itemStore)
+
+			server.Router.ServeHTTP(res, req)
+
+			assert.Equal(t, "no items to display yet", res.Body.String())
+			assert.Equal(t, http.StatusOK, res.Code)
+		})
+	})
+
+	t.Run("when a name parameter is provided", func(t *testing.T) {
+		t.Run("given an item exists in the store for the name", func(t *testing.T) {
+
+		})
+		t.Run("return 404 when no item exists in the store for that name", func(t *testing.T) {
+
+		})
 	})
 }
