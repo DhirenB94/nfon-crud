@@ -54,7 +54,20 @@ func (m *mockItemStore) DeleteItem(id int) error {
 }
 
 func (m *mockItemStore) GetAllItems(name string) (*[]models.Item, error) {
-	return &m.items, nil
+	if name == "" {
+		return &m.items, nil
+	}
+
+	items := []models.Item{}
+	for _, item := range m.items {
+		if name == item.Name {
+			items = append(items, item)
+		}
+	}
+	if len(items) == 0 {
+		return nil, errors.New("no items found")
+	}
+	return &items, nil
 }
 
 func TestServer(t *testing.T) {
@@ -274,11 +287,51 @@ func TestGetAllItems(t *testing.T) {
 	})
 
 	t.Run("when a name parameter is provided", func(t *testing.T) {
-		t.Run("given an item exists in the store for the name", func(t *testing.T) {
+		t.Run("return the items given a valid name", func(t *testing.T) {
+			allItems := []models.Item{
+				{ID: 5, Name: "fridge"},
+				{ID: 7, Name: "freezer"},
+				{ID: 10, Name: "freezer"},
+			}
+			mockStore := &mockItemStore{
+				items: allItems,
+			}
+			server := srv.NewServer(mockStore)
 
+			req, _ := http.NewRequest(http.MethodGet, "/items?name=freezer", nil)
+			res := httptest.NewRecorder()
+			server.Router.ServeHTTP(res, req)
+
+			var items []models.Item
+			err := json.NewDecoder(res.Body).Decode(&items)
+			if err != nil {
+				t.Fatalf("Unable to parse response from server %q into slice of items, '%v'", res.Body, err)
+			}
+
+			expectedItem := []models.Item{
+				{ID: 7, Name: "freezer"},
+				{ID: 10, Name: "freezer"},
+			}
+
+			assert.Equal(t, http.StatusOK, res.Code)
+			assert.Equal(t, expectedItem, items)
+			assert.Equal(t, srv.JsonContentType, res.Header().Get("content-type"))
 		})
 		t.Run("return 404 when no item exists in the store for that name", func(t *testing.T) {
+			allItems := []models.Item{
+				{ID: 5, Name: "fridge"},
+				{ID: 7, Name: "freezer"},
+			}
+			mockStore := &mockItemStore{
+				items: allItems,
+			}
+			server := srv.NewServer(mockStore)
 
+			req, _ := http.NewRequest(http.MethodGet, "/items?name=microwave", nil)
+			res := httptest.NewRecorder()
+			server.Router.ServeHTTP(res, req)
+
+			assert.Equal(t, http.StatusNotFound, res.Code)
 		})
 	})
 }

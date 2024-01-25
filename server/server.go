@@ -112,11 +112,18 @@ func (s *Server) individualItemHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) showAllItemsHandler(w http.ResponseWriter, r *http.Request) {
-	items, _ := s.Store.GetAllItems("")
+	name := r.URL.Query().Get("name")
+
+	items, err := s.Store.GetAllItems(name)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusNotFound)
+		return
+	}
 	if len(*items) == 0 {
 		w.Write([]byte("no items to display yet"))
 		return
 	}
+
 	w.Header().Set("content-type", JsonContentType)
 	json.NewEncoder(w).Encode(items)
 }
