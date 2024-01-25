@@ -1,6 +1,9 @@
 package inMemDB
 
-import "nfon-crud/models"
+import (
+	"errors"
+	"nfon-crud/models"
+)
 
 type InMemDB struct {
 	ItemStore map[int]models.Item
@@ -21,7 +24,12 @@ func (i *InMemDB) CreateItem(name string) {
 }
 
 func (i *InMemDB) GetItemByID(id int) (*models.Item, error) {
-	return nil, nil
+	for _, item := range i.ItemStore {
+		if id == item.ID {
+			return &item, nil
+		}
+	}
+	return nil, errors.New("item not found")
 }
 
 func (i *InMemDB) UpdateItemByID(id int, name string) error {
