@@ -126,5 +126,27 @@ func TestGetAllItems(t *testing.T) {
 		assert.NoError(t, err)
 		assert.Empty(t, items)
 	})
+	t.Run("return all items with a valid name", func(t *testing.T) {
+		inMemDb := inMemDB.NewInMemDB()
 
+		inMemDb.CreateItem("fridge")
+		inMemDb.CreateItem("freezer")
+		inMemDb.CreateItem("freezer")
+
+		expectedItems := &[]models.Item{
+			{ID: 2, Name: "freezer"},
+			{ID: 3, Name: "freezer"},
+		}
+		items, err := inMemDb.GetAllItems("freezer")
+		assert.NoError(t, err)
+		assert.Equal(t, expectedItems, items)
+	})
+	t.Run("return an error with an invalid name", func(t *testing.T) {
+		inMemDb := inMemDB.NewInMemDB()
+
+		items, err := inMemDb.GetAllItems("fridge")
+		assert.Error(t, err)
+		assert.ErrorContains(t, err, "no items found")
+		assert.Nil(t, items)
+	})
 }

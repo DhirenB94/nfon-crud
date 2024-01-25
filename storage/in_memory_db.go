@@ -59,6 +59,16 @@ func (i *InMemDB) GetAllItems(name string) (*[]models.Item, error) {
 		for _, item := range i.ItemStore {
 			items = append(items, item)
 		}
+		return &items, nil
+	}
+
+	for _, item := range i.ItemStore {
+		if name == item.Name {
+			items = append(items, item)
+		}
+	}
+	if len(items) == 0 {
+		return nil, errors.New("no items found")
 	}
 	return &items, nil
 }
