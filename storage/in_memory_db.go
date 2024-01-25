@@ -33,7 +33,14 @@ func (i *InMemDB) GetItemByID(id int) (*models.Item, error) {
 }
 
 func (i *InMemDB) UpdateItemByID(id int, name string) error {
-	return nil
+	for index, item := range i.ItemStore {
+		if id == item.ID {
+			item.Name = name
+			i.ItemStore[index] = item
+			return nil
+		}
+	}
+	return errors.New("item not found")
 }
 
 func (i *InMemDB) DeleteItem(id int) error {
