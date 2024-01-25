@@ -75,3 +75,30 @@ func TestUpdateItemById(t *testing.T) {
 		assert.ErrorContains(t, err, "item not found")
 	})
 }
+
+func TestDeleteItem(t *testing.T) {
+	t.Run("delete item given valid id", func(t *testing.T) {
+		inMemDb := inMemDB.NewInMemDB()
+
+		inMemDb.CreateItem("fridge")
+		inMemDb.CreateItem("freezer")
+
+		err := inMemDb.DeleteItem(2)
+		assert.NoError(t, err)
+
+		item, err := inMemDb.GetItemByID(2)
+		assert.Nil(t, item)
+		assert.Error(t, err)
+		assert.ErrorContains(t, err, "item not found")
+	})
+	t.Run("return error when trying to delete an id that is not in the store", func(t *testing.T) {
+		inMemDb := inMemDB.NewInMemDB()
+
+		inMemDb.CreateItem("fridge")
+		inMemDb.CreateItem("freezer")
+
+		err := inMemDb.DeleteItem(4)
+		assert.Error(t, err)
+		assert.ErrorContains(t, err, "item not found")
+	})
+}
