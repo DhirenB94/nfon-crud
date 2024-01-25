@@ -32,7 +32,7 @@ Feel free to implement it as you see fit, but simplicity and readability will be
 
 Clone the project
 ```bash
-  git clone [https://link-to-project](https://github.com/DhirenB94/nfon-crud.git)
+  git clone https://github.com/DhirenB94/nfon-crud.git
 ```
 Go to the project directory
 ```bash
