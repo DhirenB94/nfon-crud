@@ -2,14 +2,22 @@ package inMemDB
 
 import "nfon-crud/models"
 
-type InMemDB struct{}
+type InMemDB struct {
+	ItemStore map[int]models.Item
+}
 
 func NewInMemDB() *InMemDB {
-	return &InMemDB{}
+	return &InMemDB{
+		ItemStore: make(map[int]models.Item),
+	}
 }
 
 func (i *InMemDB) CreateItem(name string) {
-
+	id := len(i.ItemStore) + 1
+	i.ItemStore[id] = models.Item{
+		ID:   id,
+		Name: name,
+	}
 }
 
 func (i *InMemDB) GetItemByID(id int) (*models.Item, error) {
