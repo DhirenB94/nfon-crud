@@ -67,21 +67,39 @@ func (s *Server) createItemHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) individualItemHandler(w http.ResponseWriter, r *http.Request) {
+	idString := r.URL.Query().Get(":id")
+	id, err := strconv.Atoi(idString)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
 	switch r.Method {
 	case http.MethodGet:
-		idString := r.URL.Query().Get(":id")
-		id, err := strconv.Atoi(idString)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusBadRequest)
-			return
-		}
 		item, err := s.Store.GetItemByID(id)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusNotFound)
 			return
 		}
 		json.NewEncoder(w).Encode(item)
+
+	case http.MethodPatch:
+		var updatedItemName struct {
+			Name string `json:"name"`
+		}
+		err := json.NewDecoder(r.Body).Decode(&updatedItemName)
+		if err != nil {
+			http.Error(w, "invalid request body", http.StatusBadRequest)
+			return
+		}
+		err = s.Store.UpdateItemByID(id, updatedItemName.Name)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusNotFound)
+			return
+		}
+		w.Write([]byte("item updated"))
 	}
+
 }
 
 func (s *Server) showAllItemsHandler(w http.ResponseWriter, r *http.Request) {

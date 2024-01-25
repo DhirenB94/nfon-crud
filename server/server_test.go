@@ -23,6 +23,7 @@ func (m *mockItemStore) CreateItem(name string) {
 		Name: name},
 	)
 }
+
 func (m *mockItemStore) GetItemByID(id int) (*models.Item, error) {
 	for _, item := range m.items {
 		if id == item.ID {
@@ -31,12 +32,21 @@ func (m *mockItemStore) GetItemByID(id int) (*models.Item, error) {
 	}
 	return nil, errors.New("item not found")
 }
+
 func (m *mockItemStore) UpdateItemByID(id int, name string) error {
-	return nil
+	for index, item := range m.items {
+		if id == item.ID {
+			m.items[index].Name = name
+			return nil
+		}
+	}
+	return errors.New("item not found")
 }
+
 func (m *mockItemStore) DeleteItem(id int) error {
 	return nil
 }
+
 func (m *mockItemStore) GetAllItems() []models.Item {
 	return nil
 }
@@ -125,6 +135,52 @@ func TestGetItemByID(t *testing.T) {
 		server := srv.NewServer(itemStore)
 
 		req, _ := http.NewRequest(http.MethodGet, "/item/2", nil)
+		res := httptest.NewRecorder()
+		server.Router.ServeHTTP(res, req)
+
+		assert.Equal(t, http.StatusNotFound, res.Code)
+	})
+}
+
+func TestUpdate(t *testing.T) {
+	t.Run("update item with a valid id", func(t *testing.T) {
+		requestBody := strings.NewReader(`{"name": "mini fridge"}`)
+
+		items := []models.Item{
+			{ID: 5, Name: "fridge"},
+			{ID: 6, Name: "freezer"},
+		}
+		mockStore := &mockItemStore{
+			items: items,
+		}
+		server := srv.NewServer(mockStore)
+
+		req, _ := http.NewRequest(http.MethodPatch, "/item/5", requestBody)
+		req.Header.Set("Content-Type", "application/json")
+		res := httptest.NewRecorder()
+		server.Router.ServeHTTP(res, req)
+
+		assert.Equal(t, http.StatusOK, res.Code)
+		assert.Equal(t, "item updated", res.Body.String())
+
+		expectedUpdatedItem := models.Item{
+			ID:   5,
+			Name: "mini fridge",
+		}
+		assert.Equal(t, expectedUpdatedItem, mockStore.items[0])
+		assert.Len(t, mockStore.items, 2)
+	})
+	t.Run("return a 404 if item does not exist", func(t *testing.T) {
+		requestBody := strings.NewReader(`{"name": "mini fridge"}`)
+		mockItems := []models.Item{
+			{ID: 1, Name: "fridge"},
+		}
+		mockStore := &mockItemStore{
+			items: mockItems,
+		}
+		server := srv.NewServer(mockStore)
+
+		req, _ := http.NewRequest(http.MethodPatch, "/item/3", requestBody)
 		res := httptest.NewRecorder()
 		server.Router.ServeHTTP(res, req)
 
